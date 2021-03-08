@@ -82,7 +82,6 @@ def handle_chunks(COM, args, gen, model, num_processors, rank, path):
                 test_acc = testing_acc
                 total_io_time = total_io_time + io_time
 
-            end_run = COM.bcast(end_run, root=0)
             if end_run:
                 break
         # =========================== END (for i in range(num_chunks):) ===========================
@@ -124,7 +123,6 @@ def handle_chunks(COM, args, gen, model, num_processors, rank, path):
                 print('>> Round Elapsed Time= %.3f %s' % (time_, unit))
                 sys.stdout.flush()
 
-        end_run = COM.bcast(end_run, root=0)
         if end_run:
             try:
                 os.remove(train_path)
@@ -217,7 +215,6 @@ def handle_train_chunk(COM, args, training_chunk, gen, model, rank, num_processo
 
             del tr_C, tr_r
             gc.collect()
-    COM.Barrier()
 
     return train_time, io_time
 

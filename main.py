@@ -1,7 +1,6 @@
 from __future__ import print_function
 import timeit, argparse, os, sys
 import XORArbiterPUF
-from mpi4py import MPI
 
 import generator
 import models as md
@@ -11,9 +10,6 @@ import utilities.utils as utils
 Implementation of XOR Arbiter PUF Mathematical Clonability stated in this paper:  
 https://ieeexplore.ieee.org/abstract/document/8473439/
 Developed by Ahmad O. Aseeri, 2018 (a.aseeri@psau.edu.sa)
-
-(1) This code parallelized the generation of CRPs only using MPI4py (https://mpi4py.readthedocs.io/en/stable/).
-(2) Only MASTER_CORE will gather any matrices and process them as one matrix, followed by training the model in a signal core.
 
 *****  follow README file instructions on how to install necessary libraries for this experiment ***
 '''
@@ -61,11 +57,9 @@ MASTER_CORE = 0
 if __name__ == "__main__":
     experiment_start_time = timeit.default_timer()
 
-    # MPI initialization
-    COM = MPI.COMM_WORLD
-    rank = COM.Get_rank()
-    size = COM.Get_size()
-    mode = MPI.MODE_WRONLY | MPI.MODE_CREATE
+    COM = None
+    rank = MASTER_CORE
+    size = 1
     args = get_args()
     model = None
     gen = None
@@ -123,7 +117,6 @@ if __name__ == "__main__":
         output.write(line)
 
     # Start XORArbiterPUF Model Training
-    gen = COM.bcast(gen, root=0)
     XORArbiterPUF.XOR_Breaker(output, args, gen, model, COM, rank, size, path, path_to_results)
 
     if rank is MASTER_CORE:

@@ -2,76 +2,13 @@ from tempfile import NamedTemporaryFile
 
 import numpy as np
 import os, resource, math, multiprocessing, itertools, sys, random
-import boto.ec2
-import boto.utils
-import boto, boto3
 
 from generator import LinearPUFGenerator
 
 
 def data_generation(COM, num_challenges, gen, rank, num_processors):
     C, r = gen.generate(num_challenges, num_processors, rank)
-
-    gather_C = COM.gather(C, root=0)
-    COM.Barrier()
-    gather_r = COM.gather(r, root=0)
-    COM.Barrier()
-
-    if rank == 0:
-        C = np.asarray(list(itertools.chain(*gather_C))) # , dtype=np.int8
-        r = np.asarray(list(itertools.chain(*gather_r))) # , dtype=np.int8
-
-    del gather_C, gather_r
-    COM.Barrier()
     return C, r
-
-
-def stop_ec2():
-    conn = boto.ec2.connect_to_region('us-east-1',
-                                      aws_access_key_id='AKIAJVEPNSZLFQ5LKGEQ',
-                                      aws_secret_access_key='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')
-    my_id = boto.utils.get_instance_metadata()['instance-id']  # Get the current instance's id
-    logger.info(' stopping EC2 :' + str(my_id))
-    conn.stop_instances(instance_ids=[my_id])
-
-
-# def data_generation_toFile(COM, num_challenges, gen, rank, num_processors):
-#
-#     num_challenges = num_challenges / 5
-#     for i in range(1, 6):
-#         C, r = gen.generate(num_challenges, num_processors, rank)
-#         gather_C = COM.gather(C, root=0)
-#         COM.Barrier()
-#         gather_r = COM.gather(r, root=0)
-#         COM.Barrier()
-#
-#         if rank == 0:
-#             C = np.asarray(list(itertools.chain(*gather_C)))
-#             # np.set_printoptions(edgeitems=10)
-#             # print(C)
-#             # print("\n\n\n\n")
-#
-#             if i == 1:
-#                 write_on_disk('/Users/Ahmad/Desktop/xor4_64_tr.dat', C, 0)
-#             else:
-#                 write_on_disk('/Users/Ahmad/Desktop/xor4_64_tr.dat', C, -1)
-#         del gather_C, C, r
-#
-#     COM.Barrier()
-#     sys.exit(0)
-#     return C, r
-
-# def transformation(C):
-#     # Transform the 0-1 challenge to -1 and +1.
-#     V = 2. * C - 1
-#
-#     # Compute the cumulative product of the side.
-#     V = np.cumprod(V, axis=1, dtype=np.int8)
-#
-#     # Add the bias term.
-#     # V = np.hstack((V, np.ones((C.shape[0], 1)))).astype(np.int8)
-#
-#     return V
 
 def transformation(C):
 
