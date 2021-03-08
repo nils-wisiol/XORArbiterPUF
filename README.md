@@ -6,30 +6,39 @@ This Simulation is the implementation for the paper **A Machine Learning-based S
 
 
 ## Prerequisites
-* Since the code is parallelized for the data generation (CRPs generation), ensure Open-MPI is installed on your laptop from here (https://www.open-mpi.org). 
+This project can be run using Anaconda or pip.
 
+### Using Anaconda
 * Install anaconda 3 for python packages on your laptop. Ensure to make it your main python interpreter by typing in the terminal (which python).
 
 * After installing Anaconda 3, install the following packages: 
 
-	- install mpi4py from ( https://anaconda.org/anaconda/mpi4py )
 	- install term color from ( https://anaconda.org/omnia/termcolor )
+	- install pypuf from ( https://pypi.org/project/pypuf/ )
 
 * Navigate (sikit-learn/neural_network) directory in anaconda3. For instance, in Mac OSX it is usually located in this path ```/anaconda3/lib/python3.6/site-packages/sklearn/neural_network/```, and then replace ```_multilayer_perceptron.py``` with the modified one in this repository. If it will ask for your permission so accept and replace.
 
+### Using Pip
+* Clone this repository
+* Inside the repository, create a virtual environment using `python3 -m venv venv`
+* Activate it `source venv/bin/activate`
+* Install term color and pypuf `python3 -m pip install "pypuf>=0.0.9" termcolor`
 
 ## How to run 
 
-* This simulation can be run via command line. Use (mpirun -np num_processors) to run the code using a specific number of processors/cores. For example, you can use { mpirun -np 4 } which implies that you are asking Open-MPI to run your code using 4 processors/cores like the following (NOTE: It only parallelizes the data generation while the neural network modeling process still runs sequentially on a signal core):
+* This simulation can be run via command line.
 
-``` mpirun -np 4 python main.py ```
+```python main.py```
 
 * You can pass all arguments via command line and you can modify them in ```get_args()``` method in the main.py. For instance, the following is an example of how to run 4-XOR of 64-bit stages using CRPs=400000 and chunk size=10000:
 
-```mpirun -np 4 python main.py --streams 7 --stages 64 --challenges 400000 --chunk 10000```
+```python main.py --streams 7 --stages 64 --challenges 400000 --chunk 10000```
 
 * You can also state your neural network model parameters from command line: for instance if you want 3 hidden layers and minibatch= 1000, use --layers 3 --minibatch 1000. You can define your custom argument from ( get_args()) method in the main.py.
 
+* The tests can be run using pytest (install it using `python3 -m pip install pytest`)
+
+```python3 -m pytest generator/__init__.py```
 
 ## How to cite 
 ```
