@@ -57,9 +57,6 @@ MASTER_CORE = 0
 if __name__ == "__main__":
     experiment_start_time = timeit.default_timer()
 
-    COM = None
-    rank = MASTER_CORE
-    size = 1
     args = get_args()
     model = None
     gen = None
@@ -71,59 +68,57 @@ if __name__ == "__main__":
     path = ''
 
     # Generate directories to hold results
-    if rank is MASTER_CORE:
-        path_to_results = path+ 'PUF_Results/Best_Models/'
-        filename = path + 'PUF_Results/%s%d_(%d)bit.txt' % (args.puf, args.streams, args.stages)
-        filename_pkl = path_to_results + str(args.streams) + 'xor' + str(args.stages) + '.pkl'
+    path_to_results = path+ 'PUF_Results/Best_Models/'
+    filename = path + 'PUF_Results/%s%d_(%d)bit.txt' % (args.puf, args.streams, args.stages)
+    filename_pkl = path_to_results + str(args.streams) + 'xor' + str(args.stages) + '.pkl'
 
-        # Remove previous results, if exists
-        try:
-            os.makedirs(path_to_results)
-        except OSError or IOError:
-            pass
+    # Remove previous results, if exists
+    try:
+        os.makedirs(path_to_results)
+    except OSError or IOError:
+        pass
 
-        try:
-            os.makedirs(path)
-        except OSError or IOError:
-            pass
+    try:
+        os.makedirs(path)
+    except OSError or IOError:
+        pass
 
-        try:
-            os.remove(filename)
-        except OSError or IOError:
-            pass
+    try:
+        os.remove(filename)
+    except OSError or IOError:
+        pass
 
-        try:
-            os.remove(filename_pkl)
-        except OSError or IOError:
-            pass
+    try:
+        os.remove(filename_pkl)
+    except OSError or IOError:
+        pass
 
-        output = open(filename, "a")
-        model = md.XOR_PUF_MultilayerPerceptron(num_streams=args.streams,
-                                                num_stages=args.stages,
-                                                batch=args.batch_size,
-                                                solver=args.solver,
-                                                n_layers=args.layers)
-        gen = generator.XORPUFGenerator(num_stages=args.stages,
-                                        num_streams=args.streams,
-                                        num_challenges=args.challenges)
+    output = open(filename, "a")
+    model = md.XOR_PUF_MultilayerPerceptron(num_streams=args.streams,
+                                            num_stages=args.stages,
+                                            batch=args.batch_size,
+                                            solver=args.solver,
+                                            n_layers=args.layers)
+    gen = generator.XORPUFGenerator(num_stages=args.stages,
+                                    num_streams=args.streams,
+                                    num_challenges=args.challenges)
 
-        line = "\n-----------------------------------------------\n" \
-               + '[{}] PUF: '.format('XOR') \
-               + 'XORs={:d}, '.format(int(args.streams)) \
-               + 'Stages={:d}bit, '.format(int(args.stages)) \
-               + 'CRPs={:d}K\n'.format(int(args.challenges/1000)) \
-               + "-----------------------------------------------\n"
-        print(line)
-        output.write(line)
+    line = "\n-----------------------------------------------\n" \
+           + '[{}] PUF: '.format('XOR') \
+           + 'XORs={:d}, '.format(int(args.streams)) \
+           + 'Stages={:d}bit, '.format(int(args.stages)) \
+           + 'CRPs={:d}K\n'.format(int(args.challenges/1000)) \
+           + "-----------------------------------------------\n"
+    print(line)
+    output.write(line)
 
     # Start XORArbiterPUF Model Training
-    XORArbiterPUF.XOR_Breaker(output, args, gen, model, COM, rank, size, path, path_to_results)
+    XORArbiterPUF.XOR_Breaker(output, args, gen, model, path, path_to_results)
 
-    if rank is MASTER_CORE:
-        elapsed = timeit.default_timer() - experiment_start_time
-        time_, unit = utils.convert_time(float(elapsed))
-        output.write('Experiment Total time= %.3f %s\n' % (time_, unit))
-        print('Experiment Total time= %.3f %s\n\n' % (time_, unit))
-        output.close()
-        # if sys.platform != 'darwin':
-        #     utils.stop_ec2()
+    elapsed = timeit.default_timer() - experiment_start_time
+    time_, unit = utils.convert_time(float(elapsed))
+    output.write('Experiment Total time= %.3f %s\n' % (time_, unit))
+    print('Experiment Total time= %.3f %s\n\n' % (time_, unit))
+    output.close()
+    # if sys.platform != 'darwin':
+    #     utils.stop_ec2()

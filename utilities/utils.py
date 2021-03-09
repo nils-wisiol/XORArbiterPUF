@@ -6,8 +6,8 @@ import os, resource, math, multiprocessing, itertools, sys, random
 from generator import LinearPUFGenerator
 
 
-def data_generation(COM, num_challenges, gen, rank, num_processors):
-    C, r = gen.generate(num_challenges, num_processors, rank)
+def data_generation(num_challenges, gen):
+    C, r = gen.generate(num_challenges)
     return C, r
 
 def transformation(C):
@@ -22,18 +22,6 @@ def transformation(C):
 
     return V
 
-def chunk_size(chunk, num_processors):
-    '''
-    To Ensure the chunk_size is divisible by the number of processors
-    :return:
-    '''
-
-    chunk_size = 0
-    for i in range(chunk, (chunk + 1000)):
-        if i % num_processors == 0:
-            chunk_size = i
-            break
-    return chunk_size
 
 def write_on_disk(path, data, i):
     if i == 0:
@@ -140,7 +128,7 @@ def test_write_read():
     n = 64
     N = 13000
     puf = LinearPUFGenerator(n)
-    C, r = puf.generate(N, 1, 0)
+    C, r = puf.generate(N)
 
     with NamedTemporaryFile() as f:
         write_on_disk(f.name, np.hstack((C, r.reshape(-1, 1))), 0)

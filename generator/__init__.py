@@ -11,14 +11,14 @@ class PUFGenerator(object):
         self.num_stages = num_stages
         self.num_streams = num_streams
 
-    def generate(self, num_challenges, size=1, rank=0):
-        num_ch = int(num_challenges / size)
-        C = self.generate_challenges(num_ch, rank)
+    def generate(self, num_challenges):
+        num_ch = int(num_challenges)
+        C = self.generate_challenges(num_ch)
         C, r = self.simulate_challenges(C)
         return C, r
 
-    def generate_challenges(self, num_challenges, rank):
-        np.random.seed(random.randint(0, 2 ** 16) + rank)
+    def generate_challenges(self, num_challenges):
+        np.random.seed(random.randint(0, 2 ** 16))
         C = np.random.choice(np.array([0, 1], dtype=np.int8), size=(num_challenges, self.num_stages))
         challenges = np.unique(C, axis=0) if self.num_stages < 32 else C
 
@@ -200,7 +200,7 @@ class XORPUFGenerator(PUFGenerator):
 def test_arbiter_puf_simulation():
     """Tests if delay-based and pypuf-based simulation gives the same result in `LinearPUFGenerator`."""
     puf = LinearPUFGenerator(64)
-    challenges = puf.generate_challenges(num_challenges=100, rank=0)
+    challenges = puf.generate_challenges(num_challenges=100)
     _, r1 = PUFGenerator.simulate_challenges(puf, challenges)
     _, r2 = puf.simulate_challenges(challenges)
     assert np.mean(r1 == r2) == 1
@@ -209,7 +209,7 @@ def test_arbiter_puf_simulation():
 def test_xor_arbiter_puf_simulation():
     """Tests if delay-based and pypuf-based simulation gives the same result in `XORPUFGenerator`."""
     puf = XORPUFGenerator(64, 3)
-    challenges = puf.generate_challenges(num_challenges=100, rank=0)
+    challenges = puf.generate_challenges(num_challenges=100)
     _, r1 = PUFGenerator.simulate_challenges(puf, challenges)
     _, r2 = puf.simulate_challenges(challenges)
     assert np.mean(r1 == r2) == 1
